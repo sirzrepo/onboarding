@@ -1,0 +1,7 @@
+{
+  "name": "SIRz Setup Wizard",
+  "description": "A pixel-perfect replication of the SIRz onboarding wizard with a multi-step setup flow.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
