@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { WelcomeContent } from './components/WelcomeContent';
 import { LogoUploadStep } from './components/LogoUploadStep';
@@ -11,19 +11,35 @@ import { Dashboard } from './components/Dashboard';
 import { STEPS } from './constants';
 
 const App: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [logo, setLogo] = useState<string | null>(null);
-  const [showDashboard, setShowDashboard] = useState(false);
+  // Load saved state from localStorage on mount
+  const [currentStep, setCurrentStep] = useState(() => {
+    const saved = localStorage.getItem('onboarding-currentStep');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  const [logo, setLogo] = useState<string | null>(() => {
+    return localStorage.getItem('onboarding-logo');
+  });
+  const [showDashboard, setShowDashboard] = useState(() => {
+    return localStorage.getItem('onboarding-showDashboard') === 'true';
+  });
   
   // Defaulting to the Orange palette from the screenshot preview
-  const [primaryColor, setPrimaryColor] = useState('#ea580c'); 
-  const [accentColor, setAccentColor] = useState('#fbbf24');
+  const [primaryColor, setPrimaryColor] = useState(() => {
+    return localStorage.getItem('onboarding-primaryColor') || '#ea580c';
+  }); 
+  const [accentColor, setAccentColor] = useState(() => {
+    return localStorage.getItem('onboarding-accentColor') || '#fbbf24';
+  });
 
   // Default theme
-  const [themeStyle, setThemeStyle] = useState('playful');
+  const [themeStyle, setThemeStyle] = useState(() => {
+    return localStorage.getItem('onboarding-themeStyle') || 'playful';
+  });
 
   // Shopify Connection State
-  const [isShopifyConnected, setIsShopifyConnected] = useState(false);
+  const [isShopifyConnected, setIsShopifyConnected] = useState(() => {
+    return localStorage.getItem('onboarding-isShopifyConnected') === 'true';
+  });
 
   const handleNext = () => {
     if (currentStep < STEPS.length) {
@@ -43,13 +59,49 @@ const App: React.FC = () => {
   };
 
   const handleFinishSetup = () => {
-    setShowDashboard(true);
+    // Save dashboard state to localStorage before redirect
+    localStorage.setItem('onboarding-showDashboard', 'true');
+    window.location.href = 'https://auth-app-theta-weld.vercel.app/?client_id=https://onboarding-pwqw.vercel.app/&redirect_uri=https://onboarding-pwqw.vercel.app/';
+    // setShowDashboard(true);
   };
 
   const handleLogout = () => {
     setShowDashboard(false);
     setCurrentStep(1);
   };
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('onboarding-currentStep', currentStep.toString());
+  }, [currentStep]);
+
+  useEffect(() => {
+    if (logo) {
+      localStorage.setItem('onboarding-logo', logo);
+    } else {
+      localStorage.removeItem('onboarding-logo');
+    }
+  }, [logo]);
+
+  useEffect(() => {
+    localStorage.setItem('onboarding-primaryColor', primaryColor);
+  }, [primaryColor]);
+
+  useEffect(() => {
+    localStorage.setItem('onboarding-accentColor', accentColor);
+  }, [accentColor]);
+
+  useEffect(() => {
+    localStorage.setItem('onboarding-themeStyle', themeStyle);
+  }, [themeStyle]);
+
+  useEffect(() => {
+    localStorage.setItem('onboarding-isShopifyConnected', isShopifyConnected.toString());
+  }, [isShopifyConnected]);
+
+  useEffect(() => {
+    localStorage.setItem('onboarding-showDashboard', showDashboard.toString());
+  }, [showDashboard]);
 
   // If dashboard state is active, render the full dashboard view
   if (showDashboard) {
